@@ -10,25 +10,31 @@ class WebMessageStorage(object):
 
     messages = {}
 
+    def to_unicode_or_burst(self,obj, encoding='utf-8'):
+        if isinstance(obj, basestring):
+            if not isinstance(obj,unicode):
+                obj=unicode(obj,encoding)
+        return obj
+
     def addMessage(self, to, message):
         if self.messages.has_key(unicode(to.dest)):
-            self.messages[unicode(to.dest)].append(message.decode('UTF-8'))
+            self.messages[unicode(to.dest)].append(self.to_unicode_or_burst(message))
         else:
-            self.messages[unicode(to.dest)] = [message.decode('UTF-8')]
-            
+            self.messages[unicode(to.dest)] = [self.to_unicode_or_burst(message)]
+
         print "Message stored for: " + unicode(to.dest)
-        
+
     def get_for_name(self, name):
         if self.messages.has_key(name):
             return self.messages[name]
         return None
-    
+
     def get_all_names(self):
         return self.messages.keys()
 
     def get_count(self, name):
         return len(self.messages[name])
-    
+
     def clear_all(self):
         self.messages = {}
 
@@ -40,7 +46,7 @@ class Options(usage.Options):
         ["web_port", "w", 8000 ,"Web Server Port"],
         ["web_interface", "i", "127.0.0.1", "Web Server Interface"],
         ]
-    
+
 
 def makeService(config):
 
@@ -51,7 +57,7 @@ def makeService(config):
     smtp_port = int(config.get('smtp_port'))
     web_port = int(config.get('web_port'))
     web_interface = config.get('web_interface')
-    
+
     smtpService = makeSMTPService(smtp_port, storage)
     smtpService.setServiceParent(s)
 
